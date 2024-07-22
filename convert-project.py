@@ -3,6 +3,11 @@ import csv
 
 # csvファイルを読み込む工程
 def read_csv_to_list(input_file: str) -> list:
+    """
+
+    :param input_file: jsonのデータ形式に変換したいファイル
+    :return: input_fileのデータを格納したリスト
+    """
     # 読み込んだデータを格納する
     csv_file_date: list[str] = []
     with open(input_file, mode='r', newline='', encoding='utf-8') as csvfile:
