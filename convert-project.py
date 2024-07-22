@@ -1,10 +1,22 @@
 import csv
+import os
 
 
-# csvファイルを読み込む工程
+def check_file_exist(csv_file: str) -> bool:
+    """
+    入力したファイルが自分のPCに入っているのかを確認する関数
+    :param csv_file: jsonのデータ形式に変換したいファイル
+    :return: ファイルが存在していればTrue、存在していなかったらFalseを返す
+    """
+    if not os.path.isfile(csv_file):
+        print('Error : Input file does not exist.')
+        return False
+    return True
+
+
 def read_csv_to_list(input_file: str) -> list:
     """
-
+    csvファイルを読み込み、jsonファイルに書き込むためのデータを格納する関数
     :param input_file: jsonのデータ形式に変換したいファイル
     :return: input_fileのデータを格納したリスト
     """
