@@ -8,7 +8,7 @@ def check_file_exist(csv_file: str) -> bool:
     :param csv_file: jsonのデータ形式に変換したいファイル
     :return: ファイルが存在していればTrue、存在していなかったらFalseを返す
     """
-    if not os.path.isfile(csv_file):
+    if not os.path.exists(csv_file):
         print('Error : Input file does not exist.')
         return False
     return True
