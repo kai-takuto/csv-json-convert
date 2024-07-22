@@ -1,6 +1,5 @@
 import csv
 import os
-from csv import DictReader
 
 
 def check_file_exist(csv_file: str) -> bool:
@@ -24,7 +23,7 @@ def read_csv_to_list(input_file: str) -> list:
     # 読み込んだデータを格納する
     csv_file_date: list[str] = []
     with open(input_file, mode='r', newline='', encoding='utf-8') as csvfile:
-        reader: DictReader[str] = csv.DictReader(csvfile)
+        reader: csv.DictReader = csv.DictReader(csvfile)
         print(type(reader))
         # データを抜き取った後に、csv_file_dateに追加する
         for raw in reader:
