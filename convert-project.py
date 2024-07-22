@@ -24,7 +24,6 @@ def read_csv_to_list(input_file: str) -> list:
     csv_file_date: list[str] = []
     with open(input_file, mode='r', newline='', encoding='utf-8') as csvfile:
         reader: csv.DictReader = csv.DictReader(csvfile)
-        print(type(reader))
         # データを抜き取った後に、csv_file_dateに追加する
         for raw in reader:
             yield raw
