@@ -1,5 +1,6 @@
 import csv
 import os
+from csv import DictReader
 
 
 def check_file_exist(csv_file: str) -> bool:
@@ -14,7 +15,7 @@ def check_file_exist(csv_file: str) -> bool:
     return True
 
 
-def read_csv_to_list(input_file: str) -> None:
+def read_csv_to_list(input_file: str) -> list:
     """
     csvファイルを読み込み、jsonファイルに書き込むためのデータを格納する関数
     :param input_file: jsonのデータ形式に変換したいファイル
@@ -23,10 +24,9 @@ def read_csv_to_list(input_file: str) -> None:
     # 読み込んだデータを格納する
     csv_file_date: list[str] = []
     with open(input_file, mode='r', newline='', encoding='utf-8') as csvfile:
-        reader: csv.DictReader[str] = csv.DictReader(csvfile)
+        reader: DictReader[str] = csv.DictReader(csvfile)
+        print(type(reader))
         # データを抜き取った後に、csv_file_dateに追加する
         for raw in reader:
-            csv_file_date.append(raw)
             yield raw
     return csv_file_date
-
