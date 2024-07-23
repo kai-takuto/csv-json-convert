@@ -57,8 +57,11 @@ def write_list_to_csv(data: list[dict], csv_file: str) -> None:
     :param csv_file:jsonファイルからcsvファイルに書き込むファイル
     :return:None
     """
+    def rows_data(json_data: list[dict]) -> Generator[dict, None, None]:
+        for row in json_data:
+            yield row
+
     with open(csv_file, mode='w', newline='', encoding='utf-8') as csvfile:
         writer: csv.DictWriter = csv.DictWriter(csvfile, fieldnames=data[0].keys())
         writer.writeheader()
-        for row in data:
-            writer.writerow(row)
+        yield from rows_data(data)
