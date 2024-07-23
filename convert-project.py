@@ -50,7 +50,7 @@ def read_json_to_list(json_file: str) -> list[dict]:
     return data
 
 
-def write_list_to_csv(data: list[dict], csv_file: str) -> None:
+def write_list_to_csv(data: list[dict], csv_file: str) -> Generator[dict, None, None]:
     """
     jsonファイルデータを格納したファイルをcsvファイルに書き込む関数
     :param data:読み込んだデータを格納したリスト
