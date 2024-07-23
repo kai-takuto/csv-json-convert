@@ -29,7 +29,7 @@ def read_csv_to_list(csv_file: str) -> Generator[dict, None, None]:
             yield row
 
 
-def write_data_to_json(data: list[dict], json_file: str) -> None:
+def write_data_to_json(data: Generator[dict, None, None], json_file: str) -> None:
     """
     rowsのデータをjsonファイルに書き込む関数
     :param data: jsonファイルに書き込むためのcsvファイルのデータ
@@ -75,7 +75,7 @@ def convert_csv_to_json(csv_file: str) -> None:
         sys.exit(1)
 
     csv_data: Generator[dict, None, None] = read_csv_to_list(csv_file)
-    data: list[dict] = list(csv_data)
+    data: Generator[dict, None, None] = csv_data
     json_file: str = 'converted.json'
     write_data_to_json(data, json_file)
     print(f'File conversion complete: CSV -> JSON. Output file: {json_file}')
