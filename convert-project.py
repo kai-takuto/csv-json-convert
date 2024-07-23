@@ -73,8 +73,24 @@ def convert_csv_to_json(csv_file: str) -> None:
     """
     if not check_file_exist(csv_file):
         sys.exit(1)
+
     csv_data: Generator[dict, None, None] = read_csv_to_list(csv_file)
     data: list[dict] = list(csv_data)
     json_file: str = 'converted.json'
     write_data_to_json(data, json_file)
-    print(f'Conversion successful: CSV -> JSON. Output file: {json_file}')
+    print(f'File conversion complete: CSV -> JSON. Output file: {json_file}')
+
+
+def convert_json_to_csv(json_file: str) -> None:
+    """
+     JSONファイルをCSVファイルに変換する関数
+    :param json_file: csvファイルに変換したいjsonファイル
+    :return: None
+    """
+    if not check_file_exist(json_file):
+        sys.exit(1)
+
+    json_data:  list[dict] = read_json_to_list(json_file)
+    csv_file: str = 'converted.csv'
+    write_list_to_csv(json_data, csv_file)
+    print(f'File conversion complete: JSON -> CSV. Output file: {csv_file}')
