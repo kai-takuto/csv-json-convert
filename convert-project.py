@@ -50,23 +50,15 @@ def read_json_to_list(json_file: str) -> list[dict]:
     return data
 
 
-def write_list_to_csv(data: list[dict], csv_file: str) -> Generator[dict, None, None]:
+def write_list_to_csv(data: list[dict], csv_file: str) -> None:
     """
     jsonファイルデータを格納したファイルをcsvファイルに書き込む関数
     :param data:読み込んだデータを格納したリスト
     :param csv_file:jsonファイルからcsvファイルに書き込むファイル
     :return:None
     """
-    def rows_data(json_data: list[dict]) -> Generator[dict, None, None]:
-        """
-        jsonのデータを抜き取る関数
-        :param json_data: jsonのデータ
-        :return: None
-        """
-        for row in json_data:
-            yield row
-
     with open(csv_file, mode='w', newline='', encoding='utf-8') as csvfile:
         writer: csv.DictWriter = csv.DictWriter(csvfile, fieldnames=data[0].keys())
         writer.writeheader()
-        yield from rows_data(data)
+        for row in data:
+            writer.writerow(row)
