@@ -1,5 +1,6 @@
 import csv
 import os
+import json
 
 
 def check_file_exist(csv_file: str) -> bool:
@@ -26,3 +27,14 @@ def read_csv_to_list(input_file: str) -> list:
         # データを抜き取った後に、csv_file_dateに追加する
         for row in rows:
             yield row
+
+
+def write_data_to_json(data: list[dict], json_file: str) -> None:
+    """
+    rowsのデータをjsonファイルに書き込む関数
+    :param data: jsonファイルに書き込むためのcsvファイルのデータ
+    :param json_file: csvファイルからjsonファイルに書き込むファイル
+    :return: None
+    """
+    with open(json_file, mode='w', newline='', encoding='utf-8') as jsonfile:
+        json.dump(data, jsonfile, ensure_ascii=False, indent=4)
