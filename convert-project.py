@@ -1,6 +1,7 @@
 import csv
 import os
 import json
+from typing import Generator
 
 
 def check_file_exist(file_path: str) -> bool:
@@ -15,7 +16,7 @@ def check_file_exist(file_path: str) -> bool:
     return True
 
 
-def read_csv_to_list(csv_file: str) -> list:
+def read_csv_to_list(csv_file: str) -> Generator[dict, None, None]:
     """
     csvファイルを読み込み、jsonファイルに書き込むためのデータを格納する関数
     :param csv_file: jsonのデータ形式に変換したいファイル
