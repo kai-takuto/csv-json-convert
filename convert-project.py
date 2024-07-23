@@ -22,10 +22,8 @@ def read_csv_to_list(csv_file: str) -> Generator[dict, None, None]:
     :param csv_file: jsonのデータ形式に変換したいファイル
     :return: input_fileのデータを格納したリスト
     """
-    # 読み込んだデータを処理
     with open(csv_file, mode='r', newline='', encoding='utf-8') as csvfile:
         rows: csv.DictReader = csv.DictReader(csvfile)
-        # データを抜き取った後に、csv_file_dateに追加する
         for row in rows:
             yield row
 
