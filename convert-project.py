@@ -63,3 +63,18 @@ def write_list_to_csv(data: list[dict], csv_file: str) -> None:
         writer.writeheader()
         for row in data:
             writer.writerow(row)
+
+
+def convert_csv_to_json(csv_file: str) -> None:
+    """
+     CSVファイルをJSONファイルに変換する関数
+    :param csv_file: jsonファイルに変換したいcsvファイル
+    :return: None
+    """
+    if not check_file_exist(csv_file):
+        sys.exit(1)
+    csv_data: Generator[dict, None, None] = read_csv_to_list(csv_file)
+    data: list[dict] = list(csv_data)
+    json_file: str = 'converted.json'
+    write_data_to_json(data, json_file)
+    print(f'Conversion successful: CSV -> JSON. Output file: {json_file}')
