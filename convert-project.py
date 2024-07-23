@@ -21,7 +21,7 @@ def read_csv_to_list(csv_file: str) -> Generator[dict, None, None]:
     """
     csvファイルを読み込み、jsonファイルに書き込むためのデータを格納する関数
     :param csv_file: jsonのデータ形式に変換したいファイル
-    :return: csv_fileのデータを格納したリスト
+    :return: Generatorを返す
     """
     with open(csv_file, mode='r', newline='', encoding='utf-8') as csvfile:
         rows: csv.DictReader = csv.DictReader(csvfile)
