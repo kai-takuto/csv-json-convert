@@ -58,6 +58,11 @@ def write_list_to_csv(data: list[dict], csv_file: str) -> None:
     :return:None
     """
     def rows_data(json_data: list[dict]) -> Generator[dict, None, None]:
+        """
+        jsonのデータを抜き取る関数
+        :param json_data: jsonのデータ
+        :return: None
+        """
         for row in json_data:
             yield row
 
