@@ -24,7 +24,7 @@ def check(file_path: str) -> tuple[bool, Path]:
     return True, input_file_path
 
 
-def read_file(path: Path, as_csv: bool = True) -> Generator:
+def read_file(path: Path, as_csv: bool = True) -> Generator[dict, None, None]:
     """
     入力したファイルを読み込む関数
     :param path: 入力したファイルのパス
@@ -32,15 +32,17 @@ def read_file(path: Path, as_csv: bool = True) -> Generator:
     :return: Generator
     """
     if as_csv:
-        # TODO: CSVファイル読み込む
         with open(path, mode='r', newline='', encoding='utf-8') as csvfile:
-            csv_rows: csv.DictReader = csv.DictReader(csvfile)
+            csv_rows = csv.DictReader(csvfile)
             for row in csv_rows:
                 yield row
-    # TODO: Jsonファイル読み込む
-    with open(path, mode='r', newline='', encoding='utf-8') as jsonfile:
-        json_rows = json.load(jsonfile)
-        yield from json_rows
+    else:
+        with open(path, mode='r', newline='', encoding='utf-8') as jsonfile:
+            try:
+                json_rows = json.load(jsonfile)
+                yield from json_rows
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Error decoding JSON file: {e}")
 
 
 def write_file(row_generator: Generator, as_json: bool = True) -> bool:
@@ -63,10 +65,11 @@ def write_file(row_generator: Generator, as_json: bool = True) -> bool:
                 json.dump(row, output_json, ensure_ascii=False, indent=4)
             output_json.write(']')
     # TODO: CSVファイルに書き込む
-    with open('output.csv', mode='w', newline='', encoding='utf-8') as output_csv:
-        writer = csv.writer(output_csv)
-        for row in row_generator:
-            writer.writerow(row)
+    else:
+        with open('output.csv', mode='w', newline='', encoding='utf-8') as output_csv:
+            writer = csv.writer(output_csv)
+            for row in row_generator:
+                writer.writerow(row)
     return True
 
 
@@ -77,7 +80,6 @@ def convert_row_data(row_generator: Generator) -> Generator:
     :return: Generatorを返す
     """
     for row in row_generator:
-        # TODO: 必要な値の型を変換
         converted_row = {}
         for key, value in row.items():
             if isinstance(value, str) and value.lower() == 'na':
@@ -105,7 +107,7 @@ def convert_file(file_path: Path, to_json: bool = True):
     # データの中身を変換する
     converted_row_generator: Generator = convert_row_data(row_generator=row_generator)
     # ファイルを出力
-    is_success: bool = write_file(as_json=to_json, row_generator=converted_row_generator)
+    write_file(as_json=to_json, row_generator=converted_row_generator)
 
 
 def main():
@@ -115,13 +117,16 @@ def main():
         sys.exit(1)
 
     arg_file_path: str = sys.argv[1]
-
     # 引数が有効な値かチェック
     # 引数で指定したファイル名が有効(存在するか? csv/jsonの形式か?)かチェックする
-
-    is_to_json, file_path = check(file_path=arg_file_path)
-    convert_file(file_path=file_path, to_json=is_to_json)
+    try:
+        is_to_json, file_path = check(file_path=arg_file_path)
+        convert_file(file_path=file_path, to_json=is_to_json)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    convert_csv_to_json('input.csv')
+    # convert_csv_to_json('input.csv')
+    main()
