@@ -1,99 +1,126 @@
 import csv
-import os
 import json
 import sys
 from typing import Generator
+from pathlib import Path
 
 
-def check_file_exist(file_path: str) -> bool:
+def check(file_path: str) -> tuple[bool, Path]:
     """
-    入力したファイルが自分のPCに入っているのかを確認する関数
-    :param file_path: jsonのデータ形式に変換したいファイル
-    :return: ファイルが存在していればTrue、存在していなかったらFalseを返す
+
+    :param file_path:
+    :return:
     """
-    if not os.path.exists(file_path):
-        print('Error : Input file does not exist.')
-        return False
+    if not isinstance(file_path, str):
+        raise TypeError(f"argument 'file-path' must be str, but {type(file_path)}.")
+    input_file_path: Path = Path(file_path)
+    if not input_file_path.exists():
+        raise FileNotFoundError(f"file path: {input_file_path} does not exist.")
+    if not input_file_path.is_file():
+        raise ValueError(f"file path: {input_file_path} is not a file.")
+    # if not str(_path).endswith(".csv") or not str(_path).endswith(".json"):
+    if input_file_path.suffix not in [".csv", ".json"]:
+        raise ValueError(f"file path: {input_file_path} does not have extension 'csv' or 'json'.")
+    return True, input_file_path
+
+
+def read_file(path: Path, as_csv: bool = True) -> Generator:
+    """
+
+    :param path:
+    :param as_csv:
+    :return:
+    """
+    if as_csv:
+        # TODO: CSVファイル読み込む
+        with open(path, mode='r', newline='', encoding='utf-8') as csvfile:
+            csv_rows: csv.DictReader = csv.DictReader(csvfile)
+            for row in csv_rows:
+                yield row
+    # TODO: Jsonファイル読み込む
+    with open(path, mode='r', newline='', encoding='utf-8') as jsonfile:
+        json_rows = json.load(jsonfile)
+        yield from json_rows
+
+
+def write_file(row_generator: Generator, as_json: bool = True) -> bool:
+    """
+
+    :param row_generator:
+    :param as_json:
+    :return:
+    """
+    if as_json:
+        # TODO: Jsonファイルに書き込む
+        with open('output.json', mode='w', newline='', encoding='utf-8') as output_json:
+            output_json.write('[')
+            first_row = True
+            for row in row_generator:
+                if not first_row:
+                    output_json.write(',\n')
+                else:
+                    first_row = False
+                json.dump(row, output_json, ensure_ascii=False, indent=4)
+            output_json.write(']')
+    # TODO: CSVファイルに書き込む
+    with open('output.csv', mode='w', newline='', encoding='utf-8') as output_csv:
+        writer = csv.writer(output_csv)
+        for row in row_generator:
+            writer.writerow(row)
     return True
 
 
-def read_csv_to_list(csv_file: str) -> Generator[dict, None, None]:
+def convert_row_data(row_generator: Generator) -> Generator:
     """
-    csvファイルを読み込み、jsonファイルに書き込むためのデータを格納する関数
-    :param csv_file: jsonのデータ形式に変換したいファイル
-    :return: Generatorを返す
+
+    :param row_generator:
+    :return:
     """
-    with open(csv_file, mode='r', newline='', encoding='utf-8') as csvfile:
-        rows: csv.DictReader = csv.DictReader(csvfile)
-        for row in rows:
-            yield row
+    for row in row_generator:
+        # TODO: 必要な値の型を変換
+        converted_row = {}
+        for key, value in row.items():
+            if isinstance(value, str) and value.lower() == 'na':
+                converted_row[key] = None
+            else:
+                try:
+                    converted_row[key] = int(value)
+                except ValueError:
+                    try:
+                        converted_row[key] = float(value)
+                    except ValueError:
+                        converted_row[key] = value
+        yield converted_row
 
 
-def write_data_to_json(data: dict, json_file: str) -> None:
+def convert_file(file_path: Path, to_json: bool = True):
     """
-    rowsのデータをjsonファイルに書き込む関数
-    :param data: jsonファイルに書き込むためのcsvファイルのデータ
-    :param json_file: csvファイルからjsonファイルに書き込むファイル
-    :return: None
+
+    :param file_path:
+    :param to_json:
+    :return:
     """
-    with open(json_file, mode='a', newline='', encoding='utf-8') as jsonfile:
-        json.dump(data, jsonfile, ensure_ascii=False, indent=4)
+    # ファイルを読み込む
+    row_generator: Generator = read_file(as_csv=to_json, path=file_path)
+    # データの中身を変換する
+    converted_row_generator: Generator = convert_row_data(row_generator=row_generator)
+    # ファイルを出力
+    is_success: bool = write_file(as_json=to_json, row_generator=converted_row_generator)
 
 
-def read_json_to_list(json_file: str) -> list[dict]:
-    """
-    jsonファイルをリスト形式で読み込む関数
-    :param json_file: 入力したjsonファイル
-    :return:読み込んだデータを格納したリスト
-    """
-    with open(json_file, mode='r', encoding='utf-8') as jsonfile:
-        data: list[dict] = json.load(jsonfile)
-    return data
-
-
-def write_list_to_csv(data: list[dict], csv_file: str) -> None:
-    """
-    jsonファイルデータを格納したファイルをcsvファイルに書き込む関数
-    :param data:読み込んだデータを格納したリスト
-    :param csv_file:jsonファイルからcsvファイルに書き込むファイル
-    :return:None
-    """
-    with open(csv_file, mode='w', newline='', encoding='utf-8') as csvfile:
-        writer: csv.DictWriter = csv.DictWriter(csvfile, fieldnames=data[0].keys())
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
-
-
-def convert_csv_to_json(csv_file: str) -> None:
-    """
-     CSVファイルをJSONファイルに変換する関数
-    :param csv_file: jsonファイルに変換したいcsvファイル
-    :return: None
-    """
-    if not check_file_exist(csv_file):
+def main():
+    # TODO: 引数を受け取る
+    if len(sys.argv) != 2:
+        print("Usage: python convert.py <file_path>")
         sys.exit(1)
 
-    csv_data: Generator[dict, None, None] = read_csv_to_list(csv_file)
-    json_file: str = 'converted.json'
-    for data in csv_data:
-        write_data_to_json(data, json_file)
-    print(f'File conversion complete: CSV -> JSON. Output file: {json_file}')
+    arg_file_path: str = sys.argv[1]
 
+    # 引数が有効な値かチェック
+    # 引数で指定したファイル名が有効(存在するか? csv/jsonの形式か?)かチェックする
 
-def convert_json_to_csv(json_file: str) -> None:
-    """
-     JSONファイルをCSVファイルに変換する関数
-    :param json_file: csvファイルに変換したいjsonファイル
-    :return: None
-    """
-    if not check_file_exist(json_file):
-        sys.exit(1)
-
-    json_data: list[dict] = read_json_to_list(json_file)
-    csv_file: str = 'converted.csv'
-    write_list_to_csv(json_data, csv_file)
-    print(f'File conversion complete: JSON -> CSV. Output file: {csv_file}')
+    is_to_json, file_path = check(file_path=arg_file_path)
+    convert_file(file_path=file_path, to_json=is_to_json)
 
 
 if __name__ == "__main__":
