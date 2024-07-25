@@ -7,9 +7,9 @@ from pathlib import Path
 
 def check(file_path: str) -> tuple[bool, Path]:
     """
-
-    :param file_path:
-    :return:
+    入力したファイルのパスを確認する関数
+    :param file_path: 入力したファイルのパス
+    :return: 入力したファイルのパス・True
     """
     if not isinstance(file_path, str):
         raise TypeError(f"argument 'file-path' must be str, but {type(file_path)}.")
@@ -26,10 +26,10 @@ def check(file_path: str) -> tuple[bool, Path]:
 
 def read_file(path: Path, as_csv: bool = True) -> Generator:
     """
-
-    :param path:
-    :param as_csv:
-    :return:
+    入力したファイルを読み込む関数
+    :param path: 入力したファイルのパス
+    :param as_csv: csvファイル
+    :return: Generator
     """
     if as_csv:
         # TODO: CSVファイル読み込む
@@ -45,10 +45,10 @@ def read_file(path: Path, as_csv: bool = True) -> Generator:
 
 def write_file(row_generator: Generator, as_json: bool = True) -> bool:
     """
-
-    :param row_generator:
-    :param as_json:
-    :return:
+    読み込んだファイルを書き込む関数
+    :param row_generator: read_fileのGenerator
+    :param as_json: jsonファイル
+    :return: 書き込みが成功したらTrueを返す
     """
     if as_json:
         # TODO: Jsonファイルに書き込む
@@ -72,9 +72,9 @@ def write_file(row_generator: Generator, as_json: bool = True) -> bool:
 
 def convert_row_data(row_generator: Generator) -> Generator:
     """
-
-    :param row_generator:
-    :return:
+    変換する時に必要な型に変換する関数
+    :param row_generator: write
+    :return: Generatorを返す
     """
     for row in row_generator:
         # TODO: 必要な値の型を変換
@@ -95,10 +95,10 @@ def convert_row_data(row_generator: Generator) -> Generator:
 
 def convert_file(file_path: Path, to_json: bool = True):
     """
-
-    :param file_path:
-    :param to_json:
-    :return:
+    変換する関数
+    :param file_path:ファイルのパス
+    :param to_json:jsonファイル
+    :return:NOne
     """
     # ファイルを読み込む
     row_generator: Generator = read_file(as_csv=to_json, path=file_path)
