@@ -18,7 +18,6 @@ def check(file_path: str) -> tuple[bool, Path]:
         raise FileNotFoundError(f"file path: {input_file_path} does not exist.")
     if not input_file_path.is_file():
         raise ValueError(f"file path: {input_file_path} is not a file.")
-    # if not str(_path).endswith(".csv") or not str(_path).endswith(".json"):
     if input_file_path.suffix not in [".csv", ".json"]:
         raise ValueError(f"file path: {input_file_path} does not have extension 'csv' or 'json'.")
     return True, input_file_path
@@ -32,28 +31,35 @@ def read_file(path: Path, as_csv: bool = True) -> Generator[dict, None, None]:
     :return: Generator
     """
     if as_csv:
-        with open(path, mode='r', newline='', encoding='utf-8') as csvfile:
+        with open(path, mode="r", newline="", encoding="utf-8") as csvfile:
             csv_rows = csv.DictReader(csvfile)
             yield from csv_rows
     else:
-        with open(path, mode='r', newline='', encoding='utf-8') as jsonfile:
+        with open(path, mode="r", newline="", encoding="utf-8") as jsonfile:
             json_rows = json.load(jsonfile)
             yield from json_rows
 
 
-def write_file(row_generator: Generator, as_json: bool = True) -> bool:
+def write_file(row_generator: Generator, output_path: Path, as_json: bool = True, ) -> bool:
     """
-    読み込んだファイルを書き込む関数
-    :param row_generator: read_fileのGenerator
-    :param as_json: jsonファイル
-    :return: 書き込みが成功したらTrueを返す
+
+    :param row_generator:
+    :param output_path:
+    :param as_json:
+    :return:
     """
     if as_json:
         # TODO: Jsonファイルに書き込む
-        with open('output.json', mode='w', newline='', encoding='utf-8') as output_json:
-            json.dump(row, output_json, ensure_ascii=False, indent=4)
+        with open(output_path, mode="w", newline="", encoding="utf-8") as output_json:
+            json_data = []
+            for i, row in enumerate(row_generator):
+                if i == 0:
+                    header = row
+                else:
+                    json_data.append(dict(zip(header, row)))
+                    json.dump(row, output_json, ensure_ascii=False, indent=4)
     else:
-        with open('output.csv', mode='w', newline='', encoding='utf-8') as output_csv:
+        with open(output_path, mode='w', newline="", encoding="utf-8") as output_csv:
             writer = csv.writer(output_csv)
             for row in row_generator:
                 writer.writerow(row)
@@ -69,7 +75,7 @@ def convert_row_data(row_generator: Generator) -> Generator:
     for row in row_generator:
         converted_row = {}
         for key, value in row.items():
-            if isinstance(value, str) and value.lower() == 'na':
+            if isinstance(value, str) and value.lower() == "na":
                 converted_row[key] = None
             else:
                 try:
@@ -93,8 +99,14 @@ def convert_file(file_path: Path, to_json: bool = True):
     row_generator: Generator = read_file(as_csv=to_json, path=file_path)
     # データの中身を変換する
     converted_row_generator: Generator = convert_row_data(row_generator=row_generator)
+    # ファイルパス
+    output_path = file_path.with_suffix(".json" if to_json else '.csv')
     # ファイルを出力
     is_success: bool = write_file(as_json=to_json, row_generator=converted_row_generator)
+    if is_success:
+        print(f"変換成功: {file_path}-->{output_path}")
+    else:
+        print("変換失敗", file=sys.stderr)
 
 
 def main():
@@ -109,11 +121,10 @@ def main():
     try:
         is_to_json, file_path = check(file_path=arg_file_path)
         convert_file(file_path=file_path, to_json=is_to_json)
-    except Exception as e:
-        print(f"Error: {e}")
+    except (TypeError, FileNotFoundError, ValueError) as e:
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    # convert_csv_to_json('input.csv')
     main()
