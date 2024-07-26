@@ -34,15 +34,11 @@ def read_file(path: Path, as_csv: bool = True) -> Generator[dict, None, None]:
     if as_csv:
         with open(path, mode='r', newline='', encoding='utf-8') as csvfile:
             csv_rows = csv.DictReader(csvfile)
-            for row in csv_rows:
-                yield row
+            yield from csv_rows
     else:
         with open(path, mode='r', newline='', encoding='utf-8') as jsonfile:
-            try:
-                json_rows = json.load(jsonfile)
-                yield from json_rows
-            except json.JSONDecodeError as e:
-                raise ValueError(f"Error decoding JSON file: {e}")
+            json_rows = json.load(jsonfile)
+            yield from json_rows
 
 
 def write_file(row_generator: Generator, as_json: bool = True) -> bool:
@@ -55,16 +51,7 @@ def write_file(row_generator: Generator, as_json: bool = True) -> bool:
     if as_json:
         # TODO: Jsonファイルに書き込む
         with open('output.json', mode='w', newline='', encoding='utf-8') as output_json:
-            output_json.write('[')
-            first_row = True
-            for row in row_generator:
-                if not first_row:
-                    output_json.write(',\n')
-                else:
-                    first_row = False
-                json.dump(row, output_json, ensure_ascii=False, indent=4)
-            output_json.write(']')
-    # TODO: CSVファイルに書き込む
+            json.dump(row, output_json, ensure_ascii=False, indent=4)
     else:
         with open('output.csv', mode='w', newline='', encoding='utf-8') as output_csv:
             writer = csv.writer(output_csv)
@@ -107,7 +94,7 @@ def convert_file(file_path: Path, to_json: bool = True):
     # データの中身を変換する
     converted_row_generator: Generator = convert_row_data(row_generator=row_generator)
     # ファイルを出力
-    write_file(as_json=to_json, row_generator=converted_row_generator)
+    is_success: bool = write_file(as_json=to_json, row_generator=converted_row_generator)
 
 
 def main():
