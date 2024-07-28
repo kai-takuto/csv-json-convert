@@ -12,20 +12,20 @@ def check(file_path: str) -> tuple[bool, Path]:
     :return: 入力したファイルのパス・csvならTrue,jsonならFalseを返す
     """
     if not isinstance(file_path, str):
-        raise TypeError(f"argument 'file-path' must be str, but {type(file_path)}.")
+        raise TypeError(f"Argument 'file-path' must be a string, but received type {type(file_path)}.")
     input_file_path: Path = Path(file_path)
     if not input_file_path.exists():
-        raise FileNotFoundError(f"file path: {input_file_path} does not exist.")
+        raise FileNotFoundError(f"File path '{input_file_path}' does not exist.")
     if not input_file_path.is_file():
-        raise ValueError(f"file path: {input_file_path} is not a file.")
+        raise ValueError(f"File path '{input_file_path}' is not a file.")
     if input_file_path.suffix not in [".csv", ".json"]:
-        raise ValueError(f"file path: {input_file_path} does not have extension 'csv' or 'json'.")
+        raise ValueError(f"File path '{input_file_path}' does not have extension '.csv' or '.json'.")
     if input_file_path.suffix.lower() == '.csv':
         is_csv = True
     elif input_file_path.suffix.lower() == '.json':
         is_csv = False
     else:
-        raise ValueError(f"ファイルパス '{input_file_path}' の拡張子が '.csv' または '.json' ではありません。")
+        raise ValueError(f"File path '{input_file_path}' does not have extension '.csv' or '.json'.")
     return is_csv, input_file_path
 
 
