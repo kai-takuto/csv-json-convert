@@ -55,25 +55,22 @@ def write_file(row_generator: Generator, output_path: Path, as_json: bool = True
     :param as_json: jsonファイル
     :return:
     """
-    try:
-        if as_json:
-            with open(output_path, mode="w", newline="", encoding="utf-8") as output_json:
-                json_data = []
-                for i, row in enumerate(row_generator):
-                    if i == 0:
-                        header = row
-                    else:
-                        json_data.append(dict(zip(header, row)))
-                json.dump(json_data, output_json, indent=4)
-        else:
-            with open(output_path, mode='w', newline="", encoding="utf-8") as output_csv:
-                writer = csv.writer(output_csv)
-                for row in row_generator:
-                    writer.writerow(row)
-        return True
-    except Exception as e:
-        print(f"エラーが発生しました: {e}", file=sys.stderr)
-        return False
+    if as_json:
+        with open(output_path, mode='w', encoding='utf-8') as json_file:
+            json.dump(list(row_generator), json_file, indent=4, ensure_ascii=False)
+    else:
+        first_row = next(row_generator, None)
+        if first_row is None:
+            raise ValueError("書き込むデータがありません。")
+
+        fieldnames = first_row.keys()
+        with open(output_path, mode='w', newline='', encoding='utf-8') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer.writeheader()
+            # Write the first row and then the rest
+            writer.writerow({key: convert_row_data(value, as_json=False) for key, value in first_row.items()})
+            for row in row_generator:
+                writer.writerow({key: convert_row_data(value, as_json=False) for key, value in row.items()})
 
 
 def convert_row_data(value, as_json) -> Any:
