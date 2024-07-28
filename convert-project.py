@@ -36,7 +36,6 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
     :param as_csv: csvファイル
     :return: Generator
     """
-    # TODO:読み込んでいるデータが同じ文字を取得している
     if as_csv:
         with open(path, mode="r", newline="", encoding="utf-8") as csvfile:
             csv_rows = csv.DictReader(csvfile)
@@ -121,7 +120,7 @@ def main():
     arg_file_path: str = sys.argv[1]
 
     try:
-        is_to_json, arg_file_path = check(file_path=arg_file_path)
+        is_to_json, file_path = check(file_path=arg_file_path)
         convert_file(file_path=arg_file_path, to_json=is_to_json)
     except (TypeError, FileNotFoundError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)
