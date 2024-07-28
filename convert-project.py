@@ -1,7 +1,7 @@
 import csv
 import json
 import sys
-from typing import Generator
+from typing import Generator, Any
 from pathlib import Path
 
 
@@ -64,7 +64,6 @@ def write_file(row_generator: Generator, output_path: Path, as_json: bool = True
                         header = row
                     else:
                         json_data.append(dict(zip(header, row)))
-                        # print(json_data)
                 json.dump(json_data, output_json, indent=4)
         else:
             with open(output_path, mode='w', newline="", encoding="utf-8") as output_csv:
@@ -76,29 +75,25 @@ def write_file(row_generator: Generator, output_path: Path, as_json: bool = True
         print(f"エラーが発生しました: {e}", file=sys.stderr)
         return False
 
-    # return True
 
-
-def convert_row_data(row_generator: Generator) -> Generator:
+def convert_row_data(value, as_json) -> Any:
     """
-    変換する時に必要な型に変換する関数
-    :param row_generator: write
-    :return: Generatorを返す
+    文字列・数値・NAの変換を行う関数
+    :param value: 変換する値
+    :param as_json: Trueの時にcsv-jsonに変換、Falseの時にjson-csvに変換
+    :return: 変換後の値を返す
     """
-    for row in row_generator:
-        converted_row = {}
-        for key, value in row.items():
-            if isinstance(value, str) and value.lower() == "na":
-                converted_row[key] = None
-            else:
-                try:
-                    converted_row[key] = int(value)
-                except ValueError:
-                    try:
-                        converted_row[key] = float(value)
-                    except ValueError:
-                        converted_row[key] = value
-        yield converted_row
+    if as_json:
+        if value.strip() == '' or value.strip().upper() == 'NA':
+            return None
+        try:
+            return int(value)
+        except ValueError:
+            return value
+    else:
+        if value is None:
+            return 'NA'
+        return value
 
 
 def convert_file(file_path: Path, to_json: bool = True):
