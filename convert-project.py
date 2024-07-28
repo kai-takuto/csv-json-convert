@@ -46,14 +46,14 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
         with open(path, mode='r', encoding='utf-8') as json_file:
             json_rows = json_file.read()
             if not json_rows.strip():
-                raise ValueError("JSONファイルが空です。")
+                raise ValueError("JSON file is empty.")
             try:
                 json_rows = json.loads(json_rows)
             except json.JSONDecodeError as e:
-                raise ValueError(f"JSONデコードエラー: {e}")
+                raise ValueError(f"JSON decode error: {e}")
 
             if not isinstance(json_rows, list):
-                raise ValueError("JSONデータはリストでなければなりません。")
+                raise ValueError("JSON data must be a list.")
 
             for row in json_rows:
                 yield row
@@ -73,7 +73,7 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
     else:
         first_row = next(row_generator, None)
         if first_row is None:
-            raise ValueError("書き込むデータがありません。")
+            raise ValueError("No data to write.")
 
         fieldnames = first_row.keys()
         with open(output_path, mode='w', newline='', encoding='utf-8') as csv_file:
@@ -117,12 +117,12 @@ def convert_file(file_path: str, to_json: bool = True):
     if to_json:
         json_file_path = "output.json"
         write_file(data_generator, output_path=json_file_path, as_json=to_json)
-        print(f"CSVからJSONに変換しました: {json_file_path}")
+        print(f"Converted from CSV to JSON: {json_file_path}")
 
     else:
         csv_file_path = "output.csv"
         write_file(data_generator, output_path=csv_file_path, as_json=False)
-        print(f"JSONからCSVに変換しました: {csv_file_path}")
+        print("Usage: python convert.py <file_path>")
 
 
 def main():
