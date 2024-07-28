@@ -37,16 +37,26 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
     :return: Generator
     """
     if as_csv:
-        # CSVからJSONに変換する場合
         with open(path, mode='r', encoding='utf-8') as csv_file:
             rows = csv.DictReader(csv_file)
             for row in rows:
                 csv_rows = {key: convert_row_data(value, as_json=as_csv) for key, value in row.items()}
                 yield csv_rows
     else:
-        with open(path, mode="r", newline="", encoding="utf-8") as jsonfile:
-            json_rows = json.load(jsonfile)
-            yield from json_rows
+        with open(path, mode='r', encoding='utf-8') as json_file:
+            json_rows = json_file.read()
+            if not json_rows.strip():
+                raise ValueError("JSONファイルが空です。")
+            try:
+                json_rows = json.loads(json_rows)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"JSONデコードエラー: {e}")
+
+            if not isinstance(json_rows, list):
+                raise ValueError("JSONデータはリストでなければなりません。")
+
+            for row in json_rows:
+                yield row
 
 
 def write_file(row_generator: Generator, output_path: str, as_json: bool = True) -> None:
