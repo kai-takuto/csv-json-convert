@@ -37,9 +37,12 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
     :return: Generator
     """
     if as_csv:
-        with open(path, mode="r", newline="", encoding="utf-8") as csvfile:
-            csv_rows = csv.DictReader(csvfile)
-            yield from csv_rows
+        # CSVからJSONに変換する場合
+        with open(path, mode='r', encoding='utf-8') as csv_file:
+            rows = csv.DictReader(csv_file)
+            for row in rows:
+                csv_rows = {key: convert_row_data(value, as_json=as_csv) for key, value in row.items()}
+                yield csv_rows
     else:
         with open(path, mode="r", newline="", encoding="utf-8") as jsonfile:
             json_rows = json.load(jsonfile)
@@ -72,7 +75,7 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
                 writer.writerow({key: convert_row_data(value, as_json=False) for key, value in row.items()})
 
 
-def convert_row_data(value, as_json) -> Any:
+def convert_row_data(value, as_json: True) -> Any:
     """
     文字列・数値・NAの変換を行う関数
     :param value: 変換する値
