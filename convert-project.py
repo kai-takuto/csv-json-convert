@@ -33,7 +33,7 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
         with open(path, mode="r", encoding="utf-8") as csv_file:
             rows = csv.DictReader(csv_file)
             for row in rows:
-                csv_rows = {key: convert_row_data(value, row_data=as_csv) for key, value in row.items()}
+                csv_rows = {key: convert_row_data(value, file_data=as_csv) for key, value in row.items()}
                 yield csv_rows
     else:
         with open(path, mode="r", encoding="utf-8") as json_file:
@@ -62,7 +62,7 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
             for index, row in enumerate(row_generator):
                 if index == 0:
                     csv_writer.writerow(row.keys())
-                csv_writer.writerow([convert_row_data(value, row_data=False) for value in row.values()])
+                csv_writer.writerow([convert_row_data(value, file_data=False) for value in row.values()])
 
 
 def convert_row_data(value, file_data: True) -> Union[str, int, None]:
