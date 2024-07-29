@@ -62,7 +62,7 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
             for key, row in enumerate(row_generator):
                 if key == 0:
                     csv_writer.writerow(row.keys())
-                csv_writer.writerow(row.values())
+                csv_writer.writerow([convert_row_data(value, row_data=False) for value in row.values()])
 
 
 def convert_row_data(value, row_data: True) -> Union[str, int, None]:
