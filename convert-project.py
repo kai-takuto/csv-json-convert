@@ -1,7 +1,7 @@
 import csv
 import json
 import sys
-from typing import Generator, Any
+from typing import Generator, Union
 from pathlib import Path
 
 
@@ -26,14 +26,14 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
     """
     入力したファイルを読み込む関数
     :param path: 入力したファイルのパス
-    :param as_csv: 変換したいファイルのbool値
+    :param as_csv: 変換したいファイル "csv=True/json=False" のbool値
     :return: Generator
     """
     if as_csv:
         with open(path, mode="r", encoding="utf-8") as csv_file:
             rows = csv.DictReader(csv_file)
             for row in rows:
-                csv_rows = {key: convert_row_data(value, as_json=as_csv) for key, value in row.items()}
+                csv_rows = {key: convert_row_data(value, row_data=as_csv) for key, value in row.items()}
                 yield csv_rows
     else:
         with open(path, mode="r", encoding="utf-8") as json_file:
@@ -54,10 +54,10 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
 
 def write_file(row_generator: Generator, output_path: str, as_json: bool = True) -> None:
     """
-    ファイル 'csv/json' の読み込んだ内容を書き込む関数
+    ファイル "csv/json" の読み込んだ内容を書き込む関数
     :param row_generator: 読み込んだ内容
     :param output_path: 書き込むファイルのパス
-    :param as_json: jsonファイル
+    :param as_json: 読み込んだファイル "csv = True / json = False" のbool値
     :return:
     """
     if as_json:
@@ -72,19 +72,19 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
         with open(output_path, mode="w", newline="", encoding="utf-8") as csv_file:
             writer: csv.DictWriter = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerow({key: convert_row_data(value, as_json=False) for key, value in first_row.items()})
+            writer.writerow({key: convert_row_data(value, row_data=False) for key, value in first_row.items()})
             for row in row_generator:
-                writer.writerow({key: convert_row_data(value, as_json=False) for key, value in row.items()})
+                writer.writerow({key: convert_row_data(value, row_data=False) for key, value in row.items()})
 
 
-def convert_row_data(value, as_json: True) -> Any:
+def convert_row_data(value, row_data: True) -> Union[str, int, None]:
     """
-    文字列・数値・NAの変換を行う関数
+    "文字列 -> str / 数値 -> int / NA -> null"に変換を行う関数
     :param value: 変換する値
-    :param as_json: Trueの時にcsv-jsonに変換、Falseの時にjson-csvに変換
+    :param row_data: Trueの時にcsv-jsonに変換、Falseの時にjson-csvに変換
     :return: 変換後の値を返す
     """
-    if as_json:
+    if row_data:
         if value.strip() == "" or value.strip().upper() == "NA":
             return None
         try:
@@ -97,12 +97,12 @@ def convert_row_data(value, as_json: True) -> Any:
         return value
 
 
-def convert_file(file_path: Path, to_json: bool = True):
+def convert_file(file_path: Path, to_json: bool = True) -> None:
     """
     変換する関数
-    :param file_path:ファイルのパス
-    :param to_json:jsonファイル
-    :return:None
+    :param file_path: ファイルのパス
+    :param to_json: 変換するファイル"csv-json = True / json-csv = False"のbool値
+    :return: None
     """
     data_generator: Generator = read_file(str(file_path), as_csv=to_json)
 
@@ -114,7 +114,7 @@ def convert_file(file_path: Path, to_json: bool = True):
     else:
         csv_file_path: str = "output.csv"
         write_file(data_generator, output_path=csv_file_path, as_json=False)
-        print("Usage: python convert.py <file_path>")
+        print(f"Converted from CSV to JSON: {csv_file_path}")
 
 
 def main():
