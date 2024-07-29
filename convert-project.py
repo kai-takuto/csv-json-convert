@@ -20,9 +20,9 @@ def check(file_path: str) -> tuple[bool, Path]:
         raise ValueError(f"File path '{input_file_path}' is not a file.")
     if input_file_path.suffix not in [".csv", ".json"]:
         raise ValueError(f"File path '{input_file_path}' does not have extension '.csv' or '.json'.")
-    if input_file_path.suffix.lower() == '.csv':
+    if input_file_path.suffix.lower() == ".csv":
         is_csv = True
-    elif input_file_path.suffix.lower() == '.json':
+    elif input_file_path.suffix.lower() == ".json":
         is_csv = False
     else:
         raise ValueError(f"File path '{input_file_path}' does not have extension '.csv' or '.json'.")
@@ -37,13 +37,13 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
     :return: Generator
     """
     if as_csv:
-        with open(path, mode='r', encoding='utf-8') as csv_file:
+        with open(path, mode="r", encoding="utf-8") as csv_file:
             rows = csv.DictReader(csv_file)
             for row in rows:
                 csv_rows = {key: convert_row_data(value, as_json=as_csv) for key, value in row.items()}
                 yield csv_rows
     else:
-        with open(path, mode='r', encoding='utf-8') as json_file:
+        with open(path, mode="r", encoding="utf-8") as json_file:
             json_rows = json_file.read()
             if not json_rows.strip():
                 raise ValueError("JSON file is empty.")
@@ -68,7 +68,7 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
     :return:
     """
     if as_json:
-        with open(output_path, mode='w', encoding='utf-8') as json_file:
+        with open(output_path, mode="w", encoding="utf-8") as json_file:
             json.dump(list(row_generator), json_file, indent=4, ensure_ascii=False)
     else:
         first_row = next(row_generator, None)
@@ -76,7 +76,7 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
             raise ValueError("No data to write.")
 
         fieldnames = first_row.keys()
-        with open(output_path, mode='w', newline='', encoding='utf-8') as csv_file:
+        with open(output_path, mode="w", newline="", encoding="utf-8") as csv_file:
             writer: csv.DictWriter = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerow({key: convert_row_data(value, as_json=False) for key, value in first_row.items()})
@@ -92,7 +92,7 @@ def convert_row_data(value, as_json: True) -> Any:
     :return: 変換後の値を返す
     """
     if as_json:
-        if value.strip() == '' or value.strip().upper() == 'NA':
+        if value.strip() == "" or value.strip().upper() == "NA":
             return None
         try:
             return int(value)
@@ -100,7 +100,7 @@ def convert_row_data(value, as_json: True) -> Any:
             return value
     else:
         if value is None:
-            return 'NA'
+            return "NA"
         return value
 
 
