@@ -59,8 +59,8 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
     else:
         with open(output_path, mode="w", encoding="utf-8", newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            for first_row, row in enumerate(row_generator):
-                if first_row == 0:
+            for key, row in enumerate(row_generator):
+                if key == 0:
                     csv_writer.writerow(row.keys())
                 csv_writer.writerow(row.values())
 
