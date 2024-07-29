@@ -94,6 +94,8 @@ def convert_row_data(value, row_data: True) -> Union[str, int, None]:
     else:
         if value is None:
             return "NA"
+        elif isinstance(value, int):
+            return str(value)
         return value
 
 
