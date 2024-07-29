@@ -60,8 +60,8 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
     else:
         with open(output_path, mode="w", encoding="utf-8", newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            for header, row in enumerate(row_generator):
-                if header == 0:
+            for first_row, row in enumerate(row_generator):
+                if first_row == 0:
                     csv_writer.writerow(row.keys())
                 csv_writer.writerow(row.values())
 
@@ -70,7 +70,7 @@ def convert_row_data(value, row_data: True) -> Union[str, int, None]:
     """
     "文字列 -> str / 数値 -> int / NA -> null"に変換を行う関数
     :param value: 変換する値
-    :param row_data: Trueの時にcsv-jsonに変換、Falseの時にjson-csvに変換
+    :param row_data: 変換したい ファイル"csv / json" の読み取ったデータ
     :return: 変換後の値を返す
     """
     if row_data:
