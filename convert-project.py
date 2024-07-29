@@ -1,6 +1,7 @@
 import csv
 import json
 import sys
+import time
 from typing import Generator, Union
 from pathlib import Path
 
@@ -97,15 +98,14 @@ def convert_file(file_path: Path, to_json: bool = True) -> None:
     """
     data_generator: Generator = read_file(str(file_path), as_csv=to_json)
 
+    json_file_path: str = "output.json"
+    csv_file_path: str = "output.csv"
+
     if to_json:
-        json_file_path: str = "output.json"
         write_file(data_generator, output_path=json_file_path, as_json=to_json)
         print(f"Converted from CSV to JSON: {json_file_path}")
-
-    else:
-        csv_file_path: str = "output.csv"
-        write_file(data_generator, output_path=csv_file_path, as_json=False)
-        print(f"Converted from CSV to JSON: {csv_file_path}")
+    write_file(data_generator, output_path=csv_file_path, as_json=False)
+    print(f"Converted from CSV to JSON: {csv_file_path}")
 
 
 def main():
