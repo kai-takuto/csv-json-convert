@@ -57,17 +57,12 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
         with open(output_path, mode="w", encoding="utf-8") as json_file:
             json.dump(list(row_generator), json_file, indent=4, ensure_ascii=False)
     else:
-        first_row = next(row_generator, None)
-        if first_row is None:
-            raise ValueError("No data to write.")
-
-        fieldnames = first_row.keys()
-        with open(output_path, mode="w", newline="", encoding="utf-8") as csv_file:
-            writer: csv.DictWriter = csv.DictWriter(csv_file, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerow({key: convert_row_data(value, row_data=False) for key, value in first_row.items()})
-            for row in row_generator:
-                writer.writerow({key: convert_row_data(value, row_data=False) for key, value in row.items()})
+        with open(output_path, mode="w", encoding="utf-8", newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            for header, row in enumerate(row_generator):
+                if header == 0:
+                    csv_writer.writerow(row.keys())
+                csv_writer.writerow(row.values())
 
 
 def convert_row_data(value, row_data: True) -> Union[str, int, None]:
