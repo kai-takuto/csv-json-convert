@@ -1,7 +1,6 @@
 import csv
 import json
 import sys
-import time
 from typing import Generator, Union
 from pathlib import Path
 
@@ -38,7 +37,7 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
                 yield csv_rows
     else:
         with open(path, mode="r", encoding="utf-8") as json_file:
-            json_rows: Generator = json.load(json_file)
+            json_rows = json.load(json_file)
             if not json_rows:
                 raise ValueError("JSON file is empty.")
             if not isinstance(json_rows, list):
