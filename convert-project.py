@@ -33,7 +33,7 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
         with open(path, mode="r", encoding="utf-8") as csv_file:
             rows = csv.DictReader(csv_file)
             for row in rows:
-                csv_rows = {key: convert_row_data(value, file_data=as_csv) for key, value in row.items()}
+                csv_rows = {key: convert_row_data(value=value, csv_flag=as_csv) for key, value in row.items()}
                 yield csv_rows
     else:
         with open(path, mode="r", encoding="utf-8") as json_file:
@@ -62,17 +62,17 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
             for index, row in enumerate(row_generator):
                 if index == 0:
                     csv_writer.writerow(row.keys())
-                csv_writer.writerow([convert_row_data(value, file_data=False) for value in row.values()])
+                csv_writer.writerow([convert_row_data(value, csv_flag=False) for value in row.values()])
 
 
-def convert_row_data(value, file_data: True) -> Union[str, int, None]:
+def convert_row_data(value: str, csv_flag: bool) -> Union[str, int, None]:
     """
     "文字列 -> str / 数値 -> int / NA -> null"に変換を行う関数
     :param value: 変換する値
-    :param file_data: 変換したい ファイル"csv / json" の読み取ったデータ
+    :param csv_flag: 変換したい ファイル"csv / json" の読み取ったデータ
     :return: 変換後の値を返す
     """
-    if file_data:
+    if csv_flag:
         if value.strip() == "" or value.strip().upper() == "NA":
             return None
         try:
