@@ -65,7 +65,7 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
                 csv_writer.writerow([convert_row_data(value, csv_flag=False) for value in row.values()])
 
 
-def convert_row_data(value: str, csv_flag: bool) -> Union[str, int, None]:
+def convert_row_data(value: Union[str, int, None], csv_flag: bool) -> Union[str, int, None]:
     """
     "文字列 -> str / 数値 -> int / NA -> null"に変換を行う関数
     :param value: 変換する値
