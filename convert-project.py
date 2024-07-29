@@ -37,19 +37,12 @@ def read_file(path: str, as_csv: bool = True) -> Generator:
                 yield csv_rows
     else:
         with open(path, mode="r", encoding="utf-8") as json_file:
-            json_rows = json_file.read()
-            if not json_rows.strip():
+            json_rows: Generator = json.load(json_file)
+            if not json_rows:
                 raise ValueError("JSON file is empty.")
-            try:
-                json_rows = json.loads(json_rows)
-            except json.JSONDecodeError as e:
-                raise ValueError(f"JSON decode error: {e}")
-
             if not isinstance(json_rows, list):
                 raise ValueError("JSON data must be a list.")
-
-            for row in json_rows:
-                yield row
+            yield from json_rows
 
 
 def write_file(row_generator: Generator, output_path: str, as_json: bool = True) -> None:
@@ -101,8 +94,9 @@ def convert_row_data(value, row_data: True) -> Union[str, int, None]:
 
 def convert_file(file_path: Path, to_json: bool = True) -> None:
     """
-    変換する関数
-    :param file_path: ファイルのパス
+    "csv/json"のファイルを読み込むread_file関数と読み込んだ内容を書き込むwrite_file関数を行い、変換作業をする関数
+    読み込んだファイルがcsvならTrueが返されるので、csv-jsonへの変換が行われる。
+    :param file_path: 書き込むファイルのパス
     :param to_json: 変換するファイル"csv-json = True / json-csv = False"のbool値
     :return: None
     """
