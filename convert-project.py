@@ -97,7 +97,7 @@ def convert_file(file_path: Path, to_json: bool = True) -> None:
     """
     data_generator: Generator = read_file(str(file_path), as_csv=to_json)
 
-    output_file_path = "output.json" if to_json else "output.csv"
+    output_file_path = f"output.{'json' if to_json else 'csv'}"
 
     write_file(row_generator=data_generator, output_path=output_file_path, as_json=to_json)
     print(f"Converted {'from CSV to JSON' if to_json else 'from JSON to CSV'}: {output_file_path}")
