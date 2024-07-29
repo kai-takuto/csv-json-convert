@@ -65,14 +65,14 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
                 csv_writer.writerow([convert_row_data(value, row_data=False) for value in row.values()])
 
 
-def convert_row_data(value, row_data: True) -> Union[str, int, None]:
+def convert_row_data(value, file_data: True) -> Union[str, int, None]:
     """
     "文字列 -> str / 数値 -> int / NA -> null"に変換を行う関数
     :param value: 変換する値
-    :param row_data: 変換したい ファイル"csv / json" の読み取ったデータ
+    :param file_data: 変換したい ファイル"csv / json" の読み取ったデータ
     :return: 変換後の値を返す
     """
-    if row_data:
+    if file_data:
         if value.strip() == "" or value.strip().upper() == "NA":
             return None
         try:
