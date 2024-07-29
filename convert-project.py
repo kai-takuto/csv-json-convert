@@ -77,9 +77,8 @@ def write_file(row_generator: Generator, output_path: str, as_json: bool = True)
 
         fieldnames = first_row.keys()
         with open(output_path, mode='w', newline='', encoding='utf-8') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer: csv.DictWriter = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
-            # Write the first row and then the rest
             writer.writerow({key: convert_row_data(value, as_json=False) for key, value in first_row.items()})
             for row in row_generator:
                 writer.writerow({key: convert_row_data(value, as_json=False) for key, value in row.items()})
@@ -105,22 +104,22 @@ def convert_row_data(value, as_json: True) -> Any:
         return value
 
 
-def convert_file(file_path: str, to_json: bool = True):
+def convert_file(file_path: Path, to_json: bool = True):
     """
     変換する関数
     :param file_path:ファイルのパス
     :param to_json:jsonファイル
     :return:None
     """
-    data_generator = read_file(file_path, as_csv=to_json)
+    data_generator: Generator = read_file(str(file_path), as_csv=to_json)
 
     if to_json:
-        json_file_path = "output.json"
+        json_file_path: str = "output.json"
         write_file(data_generator, output_path=json_file_path, as_json=to_json)
         print(f"Converted from CSV to JSON: {json_file_path}")
 
     else:
-        csv_file_path = "output.csv"
+        csv_file_path: str = "output.csv"
         write_file(data_generator, output_path=csv_file_path, as_json=False)
         print("Usage: python convert.py <file_path>")
 
@@ -134,7 +133,7 @@ def main():
 
     try:
         is_to_json, file_path = check(file_path=arg_file_path)
-        convert_file(file_path=arg_file_path, to_json=is_to_json)
+        convert_file(file_path=file_path, to_json=is_to_json)
     except (TypeError, FileNotFoundError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
