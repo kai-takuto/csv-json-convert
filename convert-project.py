@@ -1,65 +1,124 @@
 import csv
-import os
 import json
 import sys
-from typing import Generator
+from typing import Generator, Union
+from pathlib import Path
 
 
-def check_file_exist(file_path: str) -> bool:
+def check(file_path: str) -> tuple[bool, Path]:
     """
-    入力したファイルが自分のPCに入っているのかを確認する関数
-    :param file_path: jsonのデータ形式に変換したいファイル
-    :return: ファイルが存在していればTrue、存在していなかったらFalseを返す
+    入力したファイルのパスを確認する関数
+    :param file_path: 入力したファイルのパス
+    :return: 入力したファイルのパス・csvならTrue,jsonならFalseを返す
     """
-    if not os.path.exists(file_path):
-        print('Error : Input file does not exist.')
-        return False
-    return True
+    if not isinstance(file_path, str):
+        raise TypeError(f"Argument 'file-path' must be a string, but received type {type(file_path)}.")
+    input_file_path: Path = Path(file_path)
+    if not input_file_path.exists():
+        raise FileNotFoundError(f"File path '{input_file_path}' does not exist.")
+    if not input_file_path.is_file():
+        raise ValueError(f"File path '{input_file_path}' is not a file.")
+    if input_file_path.suffix not in [".csv", ".json"]:
+        raise ValueError(f"File path '{input_file_path}' does not have extension '.csv' or '.json'.")
+    is_csv = True if input_file_path.suffix.lower() == ".csv" else False
+    return is_csv, input_file_path
 
 
-def read_csv_to_list(csv_file: str) -> Generator[dict, None, None]:
+def read_file(path: str, as_csv: bool = True) -> Generator:
     """
-    csvファイルを読み込み、jsonファイルに書き込むためのデータを格納する関数
-    :param csv_file: jsonのデータ形式に変換したいファイル
-    :return: Generatorを返す
+    入力したファイルを読み込む関数
+    :param path: 入力したファイルのパス
+    :param as_csv: 変換したいファイル "csv=True/json=False" のbool値
+    :return: Generator
     """
-    with open(csv_file, mode='r', newline='', encoding='utf-8') as csvfile:
-        rows: csv.DictReader = csv.DictReader(csvfile)
-        for row in rows:
-            yield row
+    if as_csv:
+        with open(path, mode="r", encoding="utf-8") as csv_file:
+            rows = csv.DictReader(csv_file)
+            for row in rows:
+                csv_rows = {key: convert_row_data(value=value, csv_flag=as_csv) for key, value in row.items()}
+                yield csv_rows
+    else:
+        with open(path, mode="r", encoding="utf-8") as json_file:
+            json_rows = json.load(json_file)
+            if not json_rows:
+                raise ValueError("JSON file is empty.")
+            if not isinstance(json_rows, list):
+                raise ValueError("JSON data must be a list.")
+            yield from json_rows
 
 
-def write_data_to_json(data: list[dict], json_file: str) -> None:
+def write_file(row_generator: Generator, output_path: str, as_json: bool = True) -> None:
     """
-    rowsのデータをjsonファイルに書き込む関数
-    :param data: jsonファイルに書き込むためのcsvファイルのデータ
-    :param json_file: csvファイルからjsonファイルに書き込むファイル
+    ファイル "csv/json" の読み込んだ内容を書き込む関数
+    :param row_generator: 読み込んだ内容
+    :param output_path: 書き込むファイルのパス
+    :param as_json: 読み込んだファイル "csv = True / json = False" のbool値
+    :return:
+    """
+    if as_json:
+        with open(output_path, mode="w", encoding="utf-8") as json_file:
+            json.dump(list(row_generator), json_file, indent=4, ensure_ascii=False)
+    else:
+        with open(output_path, mode="w", encoding="utf-8", newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            for index, row in enumerate(row_generator):
+                if index == 0:
+                    csv_writer.writerow(row.keys())
+                csv_writer.writerow([convert_row_data(value, csv_flag=False) for value in row.values()])
+
+
+def convert_row_data(value: Union[str, int, None], csv_flag: bool) -> Union[str, int, None]:
+    """
+    "文字列 -> str / 数値 -> int / NA -> null"に変換を行う関数
+    :param value: 変換する値
+    :param csv_flag: 変換したい ファイル"csv / json" の読み取ったデータ
+    :return: 変換後の値を返す
+    """
+    if csv_flag:
+        if value.strip() == "" or value.strip().upper() == "NA":
+            return None
+        try:
+            return int(value)
+        except ValueError:
+            return value
+    else:
+        if value is None:
+            return "NA"
+        elif isinstance(value, int):
+            return str(value)
+        return value
+
+
+def convert_file(file_path: Path, to_json: bool = True) -> None:
+    """
+    "csv/json"のファイルを読み込むread_file関数と読み込んだ内容を書き込むwrite_file関数を行い、変換作業をする関数
+    読み込んだファイルがcsvならTrueが返されるので、csv-jsonへの変換が行われる。
+    :param file_path: 書き込むファイルのパス
+    :param to_json: 変換するファイル"csv-json = True / json-csv = False"のbool値
     :return: None
     """
-    with open(json_file, mode='w', newline='', encoding='utf-8') as jsonfile:
-        json.dump(data, jsonfile, ensure_ascii=False, indent=4)
+    data_generator: Generator = read_file(str(file_path), as_csv=to_json)
+
+    output_file_path = f"output.{'json' if to_json else 'csv'}"
+
+    write_file(row_generator=data_generator, output_path=output_file_path, as_json=to_json)
+    print(f"Converted {'from CSV to JSON' if to_json else 'from JSON to CSV'}: {output_file_path}")
 
 
-def read_json_to_list(json_file: str) -> list[dict]:
-    """
-    jsonファイルをリスト形式で読み込む関数
-    :param json_file: 入力したjsonファイル
-    :return:読み込んだデータを格納したリスト
-    """
-    with open(json_file, mode='r', encoding='utf-8') as jsonfile:
-        data: list[dict] = json.load(jsonfile)
-    return data
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: python convert.py <file_path>")
+        sys.exit(1)
+
+    arg_file_path: str = sys.argv[1]
+
+    try:
+        is_to_json, file_path = check(file_path=arg_file_path)
+        convert_file(file_path=file_path, to_json=is_to_json)
+    except (TypeError, FileNotFoundError, ValueError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
-def write_list_to_csv(data: list[dict], csv_file: str) -> None:
-    """
-    jsonファイルデータを格納したファイルをcsvファイルに書き込む関数
-    :param data:読み込んだデータを格納したリスト
-    :param csv_file:jsonファイルからcsvファイルに書き込むファイル
-    :return:None
-    """
-    with open(csv_file, mode='w', newline='', encoding='utf-8') as csvfile:
-        writer: csv.DictWriter = csv.DictWriter(csvfile, fieldnames=data[0].keys())
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
+if __name__ == "__main__":
+    main()
