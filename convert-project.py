@@ -18,6 +18,8 @@ def check(file_path: str) -> tuple[bool, Path]:
         raise FileNotFoundError(f"File path '{input_file_path}' does not exist.")
     if not input_file_path.is_file():
         raise ValueError(f"File path '{input_file_path}' is not a file.")
+    if input_file_path.suffix not in [".csv", ".json"]:
+        raise ValueError(f"File path '{input_file_path}' does not have extension '.csv' or '.json'.")
     is_csv = True if input_file_path.suffix.lower() == ".csv" else False
     return is_csv, input_file_path
 
